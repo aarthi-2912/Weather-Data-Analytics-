@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weather ML Prediction</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<main class="wrap">
+<h1>Weather ML Prediction</h1>
+<p class="sub">OpenWeather API + CSV + Supervised Machine Learning</p>
+
+<div class="search">
+<input id="city" value="{{ default_city }}" placeholder="Enter city">
+<button onclick="runPrediction()">Get Live Weather + ML Prediction</button>
+</div>
+
+<p id="status">Ready.</p>
+
+<section id="card" class="card hidden">
+<div class="top">
+<div>
+<h2 id="place">--</h2>
+<p id="condition">--</p>
+</div>
+<div class="temp"><span id="actual">--</span>°C</div>
+</div>
+
+<div class="prediction">
+<div>
+<small>Actual OpenWeather temperature</small>
+<strong id="actual2">--</strong>°C
+</div>
+<div>
+<small>Random Forest ML prediction</small>
+<strong id="predicted">--</strong>°C
+</div>
+<div>
+<small>Difference</small>
+<strong id="difference">--</strong>°C
+</div>
+</div>
+
+<div class="grid">
+<div><small>Humidity</small><b id="humidity">--</b>%</div>
+<div><small>Pressure</small><b id="pressure">--</b> hPa</div>
+<div><small>Wind</small><b id="wind">--</b> m/s</div>
+<div><small>Cloudiness</small><b id="clouds">--</b>%</div>
+<div><small>Visibility</small><b id="visibility">--</b> km</div>
+<div><small>Coordinates</small><b id="coords">--</b></div>
+</div>
+
+<p class="note">The actual value comes directly from OpenWeather. The predicted value is produced by the trained Random Forest supervised-learning model stored in <b>Super_ML.joblib</b>.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+async function runPrediction(){
+ const city=$("city").value.trim();
+ if(!city){$("status").textContent="Enter a city name.";return;}
+ $("status").textContent="Fetching live weather and running the ML model...";
+ $("card").classList.add("hidden");
+ try{
+   const r=await fetch("/api/predict?city="+encodeURIComponent(city));
+   const d=await r.json();
+   if(!r.ok) throw new Error(d.error||"Prediction failed.");
+   $("place").textContent=d.city+", "+d.country;
+   $("condition").textContent=d.weather_description;
+   $("actual").textContent=d.temperature_c;
+   $("actual2").textContent=d.temperature_c;
+   $("predicted").textContent=d.ml_predicted_temperature_c;
+   $("difference").textContent=d.difference_c;
+   $("humidity").textContent=d.humidity_percent;
+   $("pressure").textContent=d.pressure_hpa;
+   $("wind").textContent=d.wind_speed_mps;
+   $("clouds").textContent=d.cloudiness_percent;
+   $("visibility").textContent=d.visibility_km;
+   $("coords").textContent=d.latitude+", "+d.longitude;
+   $("status").textContent="Live weather fetched and ML prediction completed.";
+   $("card").classList.remove("hidden");
+ }catch(e){$("status").textContent=e.message;}
+}
+$("city").addEventListener("keydown",e=>{if(e.key==="Enter")runPrediction()});
+runPrediction();
+</script>
+</body>
+</html>
