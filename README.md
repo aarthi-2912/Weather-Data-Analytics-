@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# Project 3 - Supervised ML from Weather CSV
+#Weather Data Analytics
 
 This is the third stage of the handwritten project flow:
 
